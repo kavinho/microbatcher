@@ -21,20 +21,13 @@ func main() {
 
 			jb := microbatcher.Job{Param: number, ID: fmt.Sprintf("ccddldwsw - %d", number)}
 			result, err := micro.Run(jb)
-			if err == nil {
-				fmt.Printf("CMD .. main ..  CLIENT Got the result %v \n", result)
-			} else {
-				fmt.Printf("CMD .. main .. CLIENT Got ERROR %v \n", err)
-			}
+			fmt.Printf("CMD .. main ..  CLIENT Got the result %v  ,  %v \n", result, err)
 			wg.Done()
 		}(i)
 	}
-	time.Sleep(time.Second * 1)
+	wg.Wait() //make sure all requests and resposnes are back before we are out
 	fmt.Println("cmd Shutdown requested ... ")
-
 	micro.Shutdown()
-	fmt.Println("Waiting for all resutls to come back")
-	wg.Wait()
 	fmt.Println("DONE for Now")
 
 }

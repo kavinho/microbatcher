@@ -13,7 +13,7 @@ func (e ErrShutDown) Error() string {
 
 //MicroBatcher  an implementation of a micro batcher in GO
 type MicroBatcher struct {
-	// how many items ber batch
+	// how many items per batch
 	BatchSize int
 	// micro batching time cycle
 	BatchCycle time.Duration
