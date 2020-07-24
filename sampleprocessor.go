@@ -19,11 +19,12 @@ func (sp *sampleProcessor) Execute(jobs []Job) []JobResult {
 	time.Sleep(sp.Delay)
 	fmt.Printf("Processor.execute() Received Jobs... %v \n ", len(jobs))
 	for _, job := range jobs {
-		results = append(results, JobResult{Result: job.Param * 2, JobID: job.ID})
+		results = append(results, JobResult{Result: job.Param.(int) * 2, JobID: job.ID})
 	}
 	return results
 }
 
+//NewSampleProceesor a conenience method to create an instance of sampleProcessor
 func NewSampleProceesor(delay time.Duration) *sampleProcessor {
 
 	return &sampleProcessor{

@@ -91,7 +91,7 @@ func TestMicroMultiGorotineJobs(t *testing.T) {
 
 	processor := NewSampleProceesor(time.Millisecond * 30)
 	var wg sync.WaitGroup
-	insertJobs := 3000
+	insertJobs := 3005
 	results := make([]*JobResult, 0)
 	micro := NewMicroBatcher(processor.Execute, 20, time.Millisecond*100)
 	wg.Add(insertJobs)

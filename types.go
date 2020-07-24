@@ -2,8 +2,7 @@ package microbatcher
 
 //Job jobs are processed by batch processor haing the following structure
 type Job struct {
-	//an imaginary math calculation input parameter
-	Param int
+	Param interface{}
 	//Each job is identified by an identifier
 	ID string
 }
@@ -11,17 +10,19 @@ type Job struct {
 //JobResult processor will return results in this structure
 type JobResult struct {
 	//out come of the math processor
-	Result int
+	Result interface{}
 	//Id of the corresponding Job
 	JobID string
 }
 
 //JobWrapper an internally used strucutre.
-//It holdsa channel to the clients. so other components can let the client know of resutls
+//It holds a channel to the clients. Dispatcher will use this to let the client know of resutls
 type JobWrapper struct {
 	theJob          Job
 	responseChannel chan<- JobResult
 }
 
-// BatchExecuteFn the signature of the processor function
+// BatchExecuteFn the signature of the processor function.
+// The processor need to follow this signature, as we need to which job matches which Result,
+// using Job ID
 type BatchExecuteFn func(jobs []Job) []JobResult
