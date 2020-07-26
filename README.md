@@ -11,12 +11,10 @@ It seems , that micro batching can be broken into 3 parts, from functional persp
 * Anotehr component monitors the incoming process requests, and timing, and triggers  requests the BatchProcessor to be invoked.
 * The 3rd is a dispatcher(Worker), and invokes the BatchProcessor, and gets the reults back.
 
-|
-|
 Also I need to mention I was between to ways choosing how the batcher should return results to a client.
 
 * Get called and return the result at the same line of code.
-* Get called and return results in a channel, as thy arrive(, this one I favour the most).
+* Get called and return results in a channel, as they arrive(, this one I *favour* the most).
 
 I followed the first one as it seemed closer to what was stated to the requirement of the challenge was(, you know the interview sensitivity). 
 
