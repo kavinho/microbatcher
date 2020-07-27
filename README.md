@@ -11,7 +11,7 @@ It seems , that micro batching can be broken into 3 parts, from functional persp
 * Anotehr component monitors the incoming process requests, and timing, and triggers  requests the BatchProcessor to be invoked.
 * The 3rd is a dispatcher(Worker), and invokes the BatchProcessor, and gets the reults back.
 
-Also I need to mention I was between to ways choosing how the batcher should return results to a client.
+Also I need to mention I was between two ways choosing how the batcher should return results to a client.
 
 * Get called and return the result at the same line of code.
 * Get called and return results in a channel, as they arrive(, this one I *favour* the most).
