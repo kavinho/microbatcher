@@ -5,23 +5,30 @@ Taking advantage of GO concurrency features to build a micro-batcher.
 
 ### A bit of Design
 
-It seems , that micro batching can be broken into 3 parts, from functional perspective.
-* Deals with client, to accept the process requests, and returns the results.
-* Anotehr component manages the incoming process requests, and controls when requests need to be sent to the BatchProcessor
-* The 3rd is a dispatcher(Worker), and calls the requests to the BatchProcessor, and gets the reults back.
+It seems , that micro batching can be broken into 3 parts, from functional perspective. As listed here :
 
-Also I need to mention I was between to ways choosing how the batcher should return results to a client.
+* One part deals with client, to accept the process requests(, and possibly returns the results).
+* Anotehr component monitors the incoming process requests, and timing, and triggers  requests the BatchProcessor to be invoked.
+* The 3rd is a dispatcher(Worker), and invokes the BatchProcessor, and gets the reults back.
+
+Also I need to mention I was between two ways choosing how the batcher should return results to a client.
+
 * Get called and return the result at the same line of code.
-* Get called and return results in a channel.
+* Get called and return results in a channel, as they arrive(, this one I *favour* the most).
 
-I followed the first one as it seemed closer to what was stated to the requirement. 
+I followed the first one as it seemed closer to what was stated to the requirement of the challenge was(, you know the interview sensitivity). 
 
 ### The compenents
+Considering the 3 functions named above here are the components, I came up with the following:
+
 * Dispatcher : Accepts process requests from MicroBatcher, calls the BatchProcessor, and informs the client of results using a client specific channel.
 * MicroBatcher: Responds to client process requests, and calls Dispatcher to process requests, when it decides so.
 
+Obviously the first, and second functions are placed in Microbatcher.
+
 ### How to use it
-MicorBatcher is configurable, at initilisation time. As exaplained Below:
+
+MicorBatcher is configurable, at initilisation time. Here are the confugurable values:
 ```
 BatchSize int // How many items ber batch must be used to call BatchProcessor
 BatchCycle time.Duration //defines the micro batching time cycle.
