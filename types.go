@@ -1,9 +1,10 @@
 package microbatcher
 
-//Job jobs are processed by batch processor haing the following structure
+//Job are processed by BatchProcessor having the following structure
 type Job struct {
+	//can be of any type
 	Param interface{}
-	//Each job is identified by an identifier
+	//job identifier
 	ID string
 }
 
@@ -16,7 +17,7 @@ type JobResult struct {
 }
 
 //JobWrapper an internally used strucutre.
-//It holds a channel to the clients. Dispatcher will use this to let the client know of resutls
+//It holds a channel to the client. Dispatcher will use this to let the client know of resutls
 type JobWrapper struct {
 	theJob          Job
 	responseChannel chan<- JobResult

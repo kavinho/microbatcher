@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//This is a sample processor for testing
 type sampleProcessor struct {
 	Mutex *sync.RWMutex
 	Delay time.Duration

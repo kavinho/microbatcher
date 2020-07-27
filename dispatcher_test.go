@@ -54,7 +54,6 @@ func TestDispatcherTwoJobs(t *testing.T) {
 	assert.Equal(t, jresult2.Result, 4, "Expected 4")
 
 }
-
 func TestDispatcherGoroutineJobs(t *testing.T) {
 	fmt.Printf("Processor.execute() Received Jobs... %v \n ", 99)
 	processor := NewSampleProceesor(time.Millisecond * 300)

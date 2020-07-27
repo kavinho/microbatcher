@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//ErrShutDown an Internal error indicator
 type ErrShutDown int
 
 func (e ErrShutDown) Error() string {
@@ -17,16 +18,14 @@ type MicroBatcher struct {
 	BatchSize int
 	// micro batching time cycle
 	BatchCycle time.Duration
-	// a channle through which jobs are injected to this microbatcher
+	// a channel through which jobs are injected to this microbatcher
 	InputChannel chan JobWrapper
-	// wrapper for jb to contain client channel, to notify of result
+	// wrapper for job to contain client channel, to notify of result
 	JobItems map[string]JobWrapper
 	// concurrency control for JobItems
 	mutex *sync.RWMutex
-	// implements microcycles.
+	// micro-cycles ticker
 	metronome *time.Ticker
-	// shut down channel to notify main control
-	//shutdownChannel chan struct{}
 	// we need to wait for all jobs done before returning to client.
 	shutdownWait *sync.WaitGroup
 	//responsilbe dispatching numbe of jobs to BatchProcessor
@@ -64,7 +63,7 @@ func (mb *MicroBatcher) startBatching() {
 				return
 			}
 
-			//JObs will be dispacthed either by time or by filling the JobItems list.
+			//Jobs will be dispacthed either by time or by filling the JobItems list.
 			mb.mutex.Lock()
 			mb.JobItems[newEndJob.theJob.ID] = newEndJob
 			mb.mutex.Unlock()
@@ -73,11 +72,6 @@ func (mb *MicroBatcher) startBatching() {
 				mb.shutdownWait.Add(1)
 				mb.dispatchJobs()
 			}
-
-			// case <-mb.shutdownChannel:
-			// 	fmt.Println("Stopping Ticker..")
-			// 	mb.metronome.Stop()
-			// 	return
 		}
 	}
 }
@@ -94,17 +88,7 @@ func (mb *MicroBatcher) dispatchJobs() {
 	mb.Dispatcher.Dispatch(toBeDispatchted)
 }
 
-// func isClosed(ch <-chan JobWrapper) bool {
-// 	select {
-// 	case <-ch:
-// 		return true
-// 	default:
-// 	}
-
-// 	return false
-// }
-
-// Run Adds a job to microispatcher and waits for response in own groutine
+// Run Adds a job to microbatcher and waits for response in own groutine
 func (mb *MicroBatcher) Run(job Job) (*JobResult, error) {
 
 	jrChannel := make(chan JobResult)
@@ -121,23 +105,14 @@ func (mb *MicroBatcher) Run(job Job) (*JobResult, error) {
 	return &val, nil
 }
 
-//
-//  Front --> Batcher.Run || ~-> Dispatcher
-//
-
-//Shutdown Call this method , and microbatcher knows its time to wrap up,
-// Finished current jobs, then returns.
+//Shutdown Call this method, and microbatcher knows its time to wrap up.
 func (mb *MicroBatcher) Shutdown() {
-
 	mb.metronome.Stop()
 	close(mb.InputChannel)
-	//fmt.Println("mb Shutdown() waiting ...")
 	mb.shutdownWait.Wait()
-	//fmt.Println("mb Shutdown() wait is finished ...")
-
 }
 
-//Start ..
+//Start strats batching
 func (mb *MicroBatcher) Start() {
 	mb.metronome = time.NewTicker(mb.BatchCycle)
 	go mb.startBatching()
@@ -145,10 +120,11 @@ func (mb *MicroBatcher) Start() {
 }
 
 //NewMicroBatcher instantiates and returns a new Moicro batcher
-// params bp a BatchProcessor function.
+// params
+// bp a BatchProcessor function.
 // batchSize max size of each batch.
 // batchCycle max time between dispatches
-// Returns a confgured dispatcher
+// returns a configured dispatcher
 func NewMicroBatcher(bp BatchExecuteFn, batchSize int, batchCycle time.Duration) *MicroBatcher {
 	waitSignal := &sync.WaitGroup{}
 
@@ -166,8 +142,6 @@ func NewMicroBatcher(bp BatchExecuteFn, batchSize int, batchCycle time.Duration)
 		Dispatcher:   dispatcher,
 		shutdownWait: waitSignal,
 	}
-
-	//mbInstance.shutdownChannel = make(chan struct{})
 
 	mbInstance.Start()
 	return mbInstance
