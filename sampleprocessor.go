@@ -1,7 +1,6 @@
 package microbatcher
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -18,7 +17,6 @@ func (sp *sampleProcessor) Execute(jobs []Job) []JobResult {
 	results := make([]JobResult, len(jobs))
 	//simulating a long running process
 	time.Sleep(sp.Delay)
-	fmt.Printf("Processor.execute() Received Jobs... %v \n ", len(jobs))
 	for _, job := range jobs {
 		results = append(results, JobResult{Result: job.Param.(int) * 2, JobID: job.ID})
 	}

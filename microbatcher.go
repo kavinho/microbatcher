@@ -40,13 +40,11 @@ func (mb *MicroBatcher) startBatching() {
 		select {
 		//The internal 	tempo controller of dispatcher
 		case <-mb.metronome.C:
-
-			//fmt.Printf("mb ..startBatching .. Tick.. %v \n", time.Now())
 			mb.mutex.Lock()
 			if len(mb.JobItems) != 0 {
+
 				mb.mutex.Unlock()
 				mb.shutdownWait.Add(1)
-				//fmt.Println("mb ..startBatching .. AddWait")
 				mb.dispatchJobs()
 
 			} else {
@@ -54,11 +52,9 @@ func (mb *MicroBatcher) startBatching() {
 			}
 
 		case newEndJob, ok := <-mb.InputChannel:
-
+			//shut down has been requested
 			if !ok {
-				//fmt.Println("<-mb.InputChannel mb.shutdownWait.Add(1)")
 				mb.shutdownWait.Add(1)
-				//fmt.Println("ok := <-mb.InputChannel: Sutdown in progress")
 				mb.dispatchJobs()
 				return
 			}
@@ -68,7 +64,6 @@ func (mb *MicroBatcher) startBatching() {
 			mb.JobItems[newEndJob.theJob.ID] = newEndJob
 			mb.mutex.Unlock()
 			if len(mb.JobItems) == mb.BatchSize {
-				//fmt.Println("<-mb.InputChannel mb.shutdownWait.Add(1)")
 				mb.shutdownWait.Add(1)
 				mb.dispatchJobs()
 			}
@@ -93,14 +88,13 @@ func (mb *MicroBatcher) Run(job Job) (*JobResult, error) {
 
 	jrChannel := make(chan JobResult)
 	go func(chan JobResult) {
-		//fmt.Printf("mb .. Run .. push  %v \n", job.ID)
+		//pass the job to batcher
 		mb.InputChannel <- JobWrapper{theJob: job, responseChannel: jrChannel}
-
 	}(jrChannel)
+
 	defer close(jrChannel)
-	//fmt.Println("mb .. Run .. wating for client channel to respond")
+	//wait to get the response for the above mentioned job
 	val := <-jrChannel
-	//fmt.Println("> > Run () Got from Response channel")
 
 	return &val, nil
 }
