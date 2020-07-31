@@ -6,7 +6,7 @@ import (
 
 //Dispatcher is responsible for dispacthing bunch of jobs to BatchProcessor
 //The dispatching functionality , is put into this struct, to enable multiple dispatchers, in future.
-type Dispatcher struct {
+type dispatcher struct {
 	// The long running job is represented by this member.
 	ProcessorFn BatchExecuteFn
 	// When there is a shutdown signal, this WaitGroup causes code to wait until all dispatches have returned
@@ -14,7 +14,7 @@ type Dispatcher struct {
 }
 
 //Dispatch long running jobs to BatchProcessor
-func (dispatcher *Dispatcher) Dispatch(jobsToDispatch []JobWrapper) {
+func (dispatcher *dispatcher) dispatch(jobsToDispatch []jobWrapper) {
 
 	//TODO: This migt need locking...
 	if len(jobsToDispatch) == 0 {
@@ -22,10 +22,10 @@ func (dispatcher *Dispatcher) Dispatch(jobsToDispatch []JobWrapper) {
 		return
 	}
 
-	go func(JobWrappers []JobWrapper) {
+	go func(JobWrappers []jobWrapper) {
 		var jobs []Job = make([]Job, 0)
 		//We need a job map to match results to responseChannel
-		jobsMap := make(map[string]JobWrapper)
+		jobsMap := make(map[string]jobWrapper)
 
 		for _, jobW := range JobWrappers {
 			jobs = append(jobs, jobW.theJob)

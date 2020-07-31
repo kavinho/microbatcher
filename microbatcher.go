@@ -19,9 +19,9 @@ type MicroBatcher struct {
 	// micro batching time cycle
 	BatchCycle time.Duration
 	// a channel through which jobs are injected to this microbatcher
-	InputChannel chan JobWrapper
+	inputChannel chan jobWrapper
 	// wrapper for job to contain client channel, to notify of result
-	JobItems map[string]JobWrapper
+	jobItems map[string]jobWrapper
 	// concurrency control for JobItems
 	mutex *sync.RWMutex
 	// micro-cycles ticker
@@ -29,7 +29,7 @@ type MicroBatcher struct {
 	// we need to wait for all jobs done before returning to client.
 	shutdownWait *sync.WaitGroup
 	//responsilbe dispatching numbe of jobs to BatchProcessor
-	Dispatcher *Dispatcher
+	dispatcher *dispatcher
 }
 
 //This metod is part of initialization ritual for MicroBatcher.
@@ -41,7 +41,7 @@ func (mb *MicroBatcher) startBatching() {
 		//The internal 	tempo controller of dispatcher
 		case <-mb.metronome.C:
 			mb.mutex.Lock()
-			if len(mb.JobItems) != 0 {
+			if len(mb.jobItems) != 0 {
 
 				mb.mutex.Unlock()
 				mb.shutdownWait.Add(1)
@@ -51,7 +51,7 @@ func (mb *MicroBatcher) startBatching() {
 				mb.mutex.Unlock()
 			}
 
-		case newEndJob, ok := <-mb.InputChannel:
+		case newEndJob, ok := <-mb.inputChannel:
 			//shut down has been requested
 			if !ok {
 				mb.shutdownWait.Add(1)
@@ -61,9 +61,9 @@ func (mb *MicroBatcher) startBatching() {
 
 			//Jobs will be dispacthed either by time or by filling the JobItems list.
 			mb.mutex.Lock()
-			mb.JobItems[newEndJob.theJob.ID] = newEndJob
+			mb.jobItems[newEndJob.theJob.ID] = newEndJob
 			mb.mutex.Unlock()
-			if len(mb.JobItems) == mb.BatchSize {
+			if len(mb.jobItems) == mb.BatchSize {
 				mb.shutdownWait.Add(1)
 				mb.dispatchJobs()
 			}
@@ -74,13 +74,13 @@ func (mb *MicroBatcher) startBatching() {
 //Get jobs dispatched.
 func (mb *MicroBatcher) dispatchJobs() {
 	mb.mutex.Lock()
-	toBeDispatchted := make([]JobWrapper, 0)
-	for k := range mb.JobItems {
-		toBeDispatchted = append(toBeDispatchted, mb.JobItems[k])
-		delete(mb.JobItems, k)
+	toBeDispatchted := make([]jobWrapper, 0)
+	for k := range mb.jobItems {
+		toBeDispatchted = append(toBeDispatchted, mb.jobItems[k])
+		delete(mb.jobItems, k)
 	}
 	mb.mutex.Unlock()
-	mb.Dispatcher.Dispatch(toBeDispatchted)
+	mb.dispatcher.dispatch(toBeDispatchted)
 }
 
 // Run Adds a job to microbatcher and waits for response in own groutine
@@ -89,7 +89,7 @@ func (mb *MicroBatcher) Run(job Job) (*JobResult, error) {
 	jrChannel := make(chan JobResult)
 	go func(chan JobResult) {
 		//pass the job to batcher
-		mb.InputChannel <- JobWrapper{theJob: job, responseChannel: jrChannel}
+		mb.inputChannel <- jobWrapper{theJob: job, responseChannel: jrChannel}
 	}(jrChannel)
 
 	defer close(jrChannel)
@@ -102,7 +102,7 @@ func (mb *MicroBatcher) Run(job Job) (*JobResult, error) {
 //Shutdown Call this method, and microbatcher knows its time to wrap up.
 func (mb *MicroBatcher) Shutdown() {
 	mb.metronome.Stop()
-	close(mb.InputChannel)
+	close(mb.inputChannel)
 	mb.shutdownWait.Wait()
 }
 
@@ -122,7 +122,7 @@ func (mb *MicroBatcher) Start() {
 func NewMicroBatcher(bp BatchExecuteFn, batchSize int, batchCycle time.Duration) *MicroBatcher {
 	waitSignal := &sync.WaitGroup{}
 
-	dispatcher := &Dispatcher{
+	dispatcher := &dispatcher{
 		ProcessorFn: bp,
 		flushWait:   waitSignal,
 	}
@@ -130,10 +130,10 @@ func NewMicroBatcher(bp BatchExecuteFn, batchSize int, batchCycle time.Duration)
 	mbInstance := &MicroBatcher{
 		BatchSize:    batchSize,
 		BatchCycle:   batchCycle,
-		InputChannel: make(chan JobWrapper),
-		JobItems:     make(map[string]JobWrapper),
+		inputChannel: make(chan jobWrapper),
+		jobItems:     make(map[string]jobWrapper),
 		mutex:        &sync.RWMutex{},
-		Dispatcher:   dispatcher,
+		dispatcher:   dispatcher,
 		shutdownWait: waitSignal,
 	}
 

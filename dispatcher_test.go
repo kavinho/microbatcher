@@ -12,17 +12,17 @@ import (
 func TestDispatcherOneJob(t *testing.T) {
 	processor := NewSampleProceesor(time.Millisecond * 300)
 	waitSignal := &sync.WaitGroup{}
-	dispatcher := &Dispatcher{
+	dispatcher := &dispatcher{
 		ProcessorFn: processor.Execute,
 		flushWait:   waitSignal,
 	}
 	job := Job{Param: 1, ID: "99"}
 	channel := make(chan JobResult)
-	jobw := JobWrapper{theJob: job, responseChannel: channel}
+	jobw := jobWrapper{theJob: job, responseChannel: channel}
 
-	jobsw := []JobWrapper{jobw}
+	jobsw := []jobWrapper{jobw}
 	waitSignal.Add(1)
-	dispatcher.Dispatch(jobsw)
+	dispatcher.dispatch(jobsw)
 	jresult := <-channel
 
 	assert.Equal(t, jresult.Result, 2, "Expected 2")
@@ -33,20 +33,20 @@ func TestDispatcherTwoJobs(t *testing.T) {
 	processor := NewSampleProceesor(time.Millisecond * 300)
 
 	waitSignal := &sync.WaitGroup{}
-	dispatcher := &Dispatcher{
+	dispatcher := &dispatcher{
 		ProcessorFn: processor.Execute,
 		flushWait:   waitSignal,
 	}
 	job1 := Job{Param: 1, ID: "99"}
 	job2 := Job{Param: 2, ID: "100"}
 	channel := make(chan JobResult)
-	jobw1 := JobWrapper{theJob: job1, responseChannel: channel}
-	jobw2 := JobWrapper{theJob: job2, responseChannel: channel}
+	jobw1 := jobWrapper{theJob: job1, responseChannel: channel}
+	jobw2 := jobWrapper{theJob: job2, responseChannel: channel}
 
-	jobsw := []JobWrapper{jobw1, jobw2}
+	jobsw := []jobWrapper{jobw1, jobw2}
 
 	waitSignal.Add(1)
-	dispatcher.Dispatch(jobsw)
+	dispatcher.dispatch(jobsw)
 	jresult1 := <-channel
 	jresult2 := <-channel
 
@@ -58,22 +58,22 @@ func TestDispatcherGoroutineJobs(t *testing.T) {
 	fmt.Printf("Processor.execute() Received Jobs... %v \n ", 99)
 	processor := NewSampleProceesor(time.Millisecond * 300)
 	waitSignal := &sync.WaitGroup{}
-	dispatcher := &Dispatcher{
+	dispatcher := &dispatcher{
 		ProcessorFn: processor.Execute,
 		flushWait:   waitSignal,
 	}
 	job1 := Job{Param: 1, ID: "99"}
 	job2 := Job{Param: 2, ID: "100"}
 	channel := make(chan JobResult)
-	jobw1 := JobWrapper{theJob: job1, responseChannel: channel}
-	jobw2 := JobWrapper{theJob: job2, responseChannel: channel}
+	jobw1 := jobWrapper{theJob: job1, responseChannel: channel}
+	jobw2 := jobWrapper{theJob: job2, responseChannel: channel}
 
-	jobsw := []JobWrapper{jobw1, jobw2}
+	jobsw := []jobWrapper{jobw1, jobw2}
 
 	for i := range []int{0, 1} {
-		go func(jbw JobWrapper) {
+		go func(jbw jobWrapper) {
 			waitSignal.Add(1)
-			dispatcher.Dispatch([]JobWrapper{jbw})
+			dispatcher.dispatch([]jobWrapper{jbw})
 		}(jobsw[i])
 
 	}

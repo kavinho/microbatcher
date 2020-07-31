@@ -18,7 +18,7 @@ type JobResult struct {
 
 //JobWrapper an internally used strucutre.
 //It holds a channel to the client. Dispatcher will use this to let the client know of resutls
-type JobWrapper struct {
+type jobWrapper struct {
 	theJob          Job
 	responseChannel chan<- JobResult
 }
