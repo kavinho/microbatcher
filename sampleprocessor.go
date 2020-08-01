@@ -24,7 +24,7 @@ func (sp *sampleProcessor) Execute(jobs []Job) []JobResult {
 }
 
 //NewSampleProceesor a conenience method to create an instance of sampleProcessor
-func NewSampleProceesor(delay time.Duration) *sampleProcessor {
+func newSampleProceesor(delay time.Duration) *sampleProcessor {
 
 	return &sampleProcessor{
 		Mutex: &sync.RWMutex{},

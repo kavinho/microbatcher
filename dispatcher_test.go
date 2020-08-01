@@ -10,7 +10,7 @@ import (
 )
 
 func TestDispatcherOneJob(t *testing.T) {
-	processor := NewSampleProceesor(time.Millisecond * 300)
+	processor := newSampleProceesor(time.Millisecond * 300)
 	waitSignal := &sync.WaitGroup{}
 	dispatcher := &dispatcher{
 		ProcessorFn: processor.Execute,
@@ -30,7 +30,7 @@ func TestDispatcherOneJob(t *testing.T) {
 }
 func TestDispatcherTwoJobs(t *testing.T) {
 	fmt.Printf("Processor.execute() Received Jobs... %v \n ", 99)
-	processor := NewSampleProceesor(time.Millisecond * 300)
+	processor := newSampleProceesor(time.Millisecond * 300)
 
 	waitSignal := &sync.WaitGroup{}
 	dispatcher := &dispatcher{
@@ -56,7 +56,7 @@ func TestDispatcherTwoJobs(t *testing.T) {
 }
 func TestDispatcherGoroutineJobs(t *testing.T) {
 	fmt.Printf("Processor.execute() Received Jobs... %v \n ", 99)
-	processor := NewSampleProceesor(time.Millisecond * 300)
+	processor := newSampleProceesor(time.Millisecond * 300)
 	waitSignal := &sync.WaitGroup{}
 	dispatcher := &dispatcher{
 		ProcessorFn: processor.Execute,

@@ -40,15 +40,10 @@ func (mb *MicroBatcher) startBatching() {
 		select {
 		//The internal 	tempo controller of dispatcher
 		case <-mb.metronome.C:
-			mb.mutex.Lock()
-			if len(mb.jobItems) != 0 {
 
-				mb.mutex.Unlock()
+			if len(mb.jobItems) != 0 {
 				mb.shutdownWait.Add(1)
 				mb.dispatchJobs()
-
-			} else {
-				mb.mutex.Unlock()
 			}
 
 		case newEndJob, ok := <-mb.inputChannel:
@@ -58,11 +53,8 @@ func (mb *MicroBatcher) startBatching() {
 				mb.dispatchJobs()
 				return
 			}
-
 			//Jobs will be dispacthed either by time or by filling the JobItems list.
-			mb.mutex.Lock()
 			mb.jobItems[newEndJob.theJob.ID] = newEndJob
-			mb.mutex.Unlock()
 			if len(mb.jobItems) == mb.BatchSize {
 				mb.shutdownWait.Add(1)
 				mb.dispatchJobs()
