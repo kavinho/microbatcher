@@ -3,7 +3,7 @@
 Taking advantage of GO concurrency features to build a micro-batcher.
 
 
-### A bit of Design
+### A Bit Of Design
 
 It seems , that micro batching can be broken into 3 parts, from functional perspective. As listed here :
 
@@ -18,15 +18,22 @@ Also I need to mention I was between two ways choosing how the batcher should re
 
 I followed the first one as it seemed closer to what was stated to the requirement of the challenge was(, you know the interview sensitivity). 
 
-### The compenents
+### The Compenents
 Considering the 3 functions named above here are the components, I came up with the following:
 
 * Dispatcher : Accepts process requests from MicroBatcher, calls the BatchProcessor, and informs the client of results using a client specific channel.
 * MicroBatcher: Responds to client process requests, and calls Dispatcher to process requests, when it decides so.
 
 Obviously the first, and second functions are placed in Microbatcher.
-
-### How to use it
+### The Diagram
+				
++--------+		 +-------------------------------+     		          +--------------+
+| client +- Run(Job) --->+ IC(jobWrapper)==|Microbatcher |---- dispatch(jobs) --- + Dispatcher   +------------- [BatchProcessor.Process]
++--------+  <---+        |	             		 |			  |              | 
+		|	 +-------------------------------+			  +------+-------+
+		+------------------------------------------------------------------------+	      								
+			      
+### How To Use It
 
 MicorBatcher is configurable, at initilisation time. Here are the confugurable values:
 ```
