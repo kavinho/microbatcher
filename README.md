@@ -29,11 +29,11 @@ Obviously the first, and second functions are placed in Microbatcher.
 
 ```console				
 
-+--------+	        +-------------------------------+     		        +--------------+
-| client +- Run(Job) -->+ IC(jobWrapper)=> Microbatcher |--- dispatch(jobs) --- + Dispatcher   +------- [BatchProcessor.Process]
-+--------+  <---+       |	            		|	   	        |              | 
-		|       +-------------------------------+		        +------+-------+
-		+----------------------------------------------------------------------+	      								
++--------+	        +-------------------------------+     		      +--------------+
+| client +- Run(Job) -->+ IC(jobWrapper)=> Microbatcher |-- dispatch(jobs) -- + Dispatcher   +-- [BatchProcessor.Process]
++--------+  <---+       |	            		|	   	      |              | 
+		|       +-------------------------------+		      +------+-------+
+		+--------------------------------------------------------------------+	      								
 ```			      
 ### How To Use It
 
@@ -45,25 +45,22 @@ BatchCycle time.Duration //defines the micro batching time cycle.
 
 Here is a example of how to call the little guy:
 ```Go
-  //Just an imaginary BatchProcessor
+  	//Just an imaginary BatchProcessor
 	processor := microbatcher.NewSampleProceesor(time.Millisecond * 300)
 
 	var wg sync.WaitGroup
-
+	//initialse the batcher
 	micro := microbatcher.NewMicroBatcher(processor.Execute, 3, time.Millisecond*1500)
 	wg.Add(5)
 	for _, i := range []int{1, 2, 3,4,5} {
-
 		go func(number int) {
-
 			jb := microbatcher.Job{Param: number, ID: fmt.Sprintf("ccddldwsw - %d", number)}
 			result, err := micro.Run(jb)
-      fmt.Printf("Got results %v , %v \n", result,err)
-			}
-			wg.Done()
-		}(i)
-	}
-  //To indicate finish off , and return
+		        fmt.Printf("Got results %v , %v \n", result,err)
+		}
+		wg.Done()
+	}(i)
+
 	micro.Shutdown()
 	wg.Wait() //just making sure all jobs have been returned, and we have printed them
 
