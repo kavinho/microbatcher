@@ -26,12 +26,14 @@ Considering the 3 functions named above here are the components, I came up with 
 
 Obviously the first, and second functions are placed in Microbatcher.
 ### The Diagram
+
 ```console				
-+--------+		 +-------------------------------+     		          +--------------+
-| client +- Run(Job) --->+ IC(jobWrapper)==|Microbatcher |---- dispatch(jobs) --- + Dispatcher   +------------- [BatchProcessor.Process]
-+--------+  <---+        |	             		 |			  |              | 
-		|	 +-------------------------------+			  +------+-------+
-		+------------------------------------------------------------------------+	      								
+
++--------+	        +-------------------------------+     		        +--------------+
+| client +- Run(Job) -->+ IC(jobWrapper)=> Microbatcher |--- dispatch(jobs) --- + Dispatcher   +------- [BatchProcessor.Process]
++--------+  <---+       |	            		|	   	        |              | 
+		|       +-------------------------------+		        +------+-------+
+		+----------------------------------------------------------------------+	      								
 			      
 ### How To Use It
 
