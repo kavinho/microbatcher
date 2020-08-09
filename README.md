@@ -34,7 +34,7 @@ Obviously the first, and second functions are placed in Microbatcher.
 +--------+  <---+       |	            		|	   	        |              | 
 		|       +-------------------------------+		        +------+-------+
 		+----------------------------------------------------------------------+	      								
-			      
+```			      
 ### How To Use It
 
 MicorBatcher is configurable, at initilisation time. Here are the confugurable values:
